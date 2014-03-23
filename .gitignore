@@ -11,3 +11,8 @@
 *.lai
 *.la
 *.a
+/Debug
+/Debug_CC_Win32
+/Debug_Linux
+/Release
+/Release_Linux
