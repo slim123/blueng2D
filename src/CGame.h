@@ -21,6 +21,8 @@ class CGame
 	int font0;
 	int font1;
 
+	int musMP3;
+
 public:
 	static CGame& Get();
 

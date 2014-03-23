@@ -47,6 +47,7 @@ class CEngine
 	std::vector<SDL_Surface*> m_textures;
 	std::vector<CSubTexture> m_subtextures;
 	bool m_keyboardState[SDLK_LAST];
+	SDLKey m_lastKeyPressed;
 	std::vector<Mix_Music*> m_music;
 	std::vector<Mix_Chunk*> m_sounds;
 
@@ -118,9 +119,8 @@ public:
 	unsigned int mouseXPosition;
 	unsigned int mouseYPosition;
 
-	char keyboardLastPressed;
-
 	bool GetKeyDown(SDLKey key);
+	SDLKey GetLastKeyPressed();
 
 	bool CollideCircleCircle(int x1, int y1, int r1, int x2, int y2, int r2);
 	bool CollideRectRect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2);

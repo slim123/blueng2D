@@ -13,10 +13,13 @@ CGame& CGame::Get()
 
 CGame::CGame()
 {
-	texSquareSheet = 0;
-	memset(texSquare, 0, sizeof(texSquare));
-	texCircleSheet = 0;
-	memset(texCircle, 0, sizeof(texCircle));
+	texSquareSheet = -1;
+	texCircleSheet = -1;
+	for (int i = 0; i < 4; i++)
+	{
+		texSquare[i] = -1;
+		texCircle[i] = -1;
+	}
 
 	posXSquare = 0;
 	posYSquare = 0;
@@ -24,8 +27,10 @@ CGame::CGame()
 	posXCircle = 0;
 	posYCircle = 0;
 
-	font0 = 0;
-	font1 = 0;
+	font0 = -1;
+	font1 = -1;
+
+	musMP3 = -1;
 }
 
 CGame::~CGame()
@@ -52,6 +57,9 @@ void CGame::Init()
 		texSquare[x] = ENG.LoadSubTexture(texSquareSheet,x*50,0,50,50);
 		texCircle[x] = ENG.LoadSubTexture(texCircleSheet,x*50,0,50,50);
 	}
+
+	musMP3 = ENG.LoadMusic("data/BarrenLandscape.mp3");
+	ENG.PlayMusic(musMP3);
 }
 
 void CGame::Render()
@@ -106,6 +114,18 @@ void CGame::Update()
 	if(ENG.GetKeyDown(SDLK_RIGHT) && posXCircle < ENG.GetScreenWidth() - 25)
 	{
 		posXCircle++;
+	}
+
+	SDLKey lastPressed = ENG.GetLastKeyPressed();
+	if(lastPressed == SDLK_p)
+	{
+		ENG.PauseMusic();
+		ENG.DebugOverlayAdd("Paused music");
+	}
+	if(lastPressed == SDLK_r)
+	{
+		ENG.ResumeMusic();
+		ENG.DebugOverlayAdd("Resumed music");
 	}
 }
 

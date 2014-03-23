@@ -24,10 +24,10 @@ CEngine& CEngine::Get()
 }
 
 CEngine::CEngine() :
-		m_windowCreated(false), m_screen(0), m_debugFont(-1), m_textureLastBound(
-				0xFFFFFFFF), mouseButton1Down(0), mouseButton2Down(0), mouseButton3Down(
-				0), mouseButton4Down(0), mouseButton5Down(0), mouseWheelForward(
-				0), mouseWheelBack(0), mouseXPosition(0), mouseYPosition(0), keyboardLastPressed(
+		m_windowCreated(false), m_screen(0), m_lastKeyPressed(SDLK_UNKNOWN), m_debugFont(
+				-1), m_textureLastBound(0xFFFFFFFF), mouseButton1Down(0), mouseButton2Down(
+				0), mouseButton3Down(0), mouseButton4Down(0), mouseButton5Down(
+				0), mouseWheelForward(0), mouseWheelBack(0), mouseXPosition(0), mouseYPosition(
 				0)
 {
 }
@@ -133,7 +133,6 @@ bool CEngine::Update()
 
 	mouseWheelForward = false;
 	mouseWheelBack = false;
-	keyboardLastPressed = SDLK_UNKNOWN;
 
 	while (SDL_PollEvent(&e_event))
 	{
@@ -201,7 +200,7 @@ bool CEngine::Update()
 			break;
 		case SDL_KEYDOWN:
 			m_keyboardState[e_event.key.keysym.sym] = true;
-			keyboardLastPressed = e_event.key.keysym.unicode;
+			m_lastKeyPressed = e_event.key.keysym.sym;
 			break;
 		case SDL_KEYUP:
 			m_keyboardState[e_event.key.keysym.sym] = false;
@@ -534,6 +533,15 @@ bool CEngine::GetKeyDown(SDLKey key)
 	return r;
 }
 
+SDLKey CEngine::GetLastKeyPressed()
+{
+	SDLKey r = m_lastKeyPressed;
+
+	m_lastKeyPressed = SDLK_UNKNOWN;
+
+	return r;
+}
+
 int CEngine::LoadMusic(std::string filename)
 {
 	int r = -1;
@@ -786,7 +794,7 @@ bool CEngine::CollideCircleRect(int x1, int y1, int r1, int x2, int y2, int w2,
 		y3 = y2 + h2;
 	}
 
-	if(CollidePointCircle(x3,y3,x1,y1,r1))
+	if (CollidePointCircle(x3, y3, x1, y1, r1))
 	{
 		return true;
 	}
