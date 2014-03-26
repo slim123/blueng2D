@@ -25,10 +25,10 @@ CEngine& CEngine::Get()
 
 CEngine::CEngine() :
 		m_windowCreated(false), m_screen(0), m_lastKeyPressed(SDLK_UNKNOWN), m_debugFont(
-				-1), m_textureLastBound(0xFFFFFFFF), mouseButton1Down(0), mouseButton2Down(
-				0), mouseButton3Down(0), mouseButton4Down(0), mouseButton5Down(
-				0), mouseWheelForward(0), mouseWheelBack(0), mouseXPosition(0), mouseYPosition(
-				0)
+				-1), m_debugShown(0), m_textureLastBound(0xFFFFFFFF), m_fpsCount(
+				0), m_tickRate(40),m_clearScreenColour(0), mouseButton1Down(0), mouseButton2Down(0), mouseButton3Down(
+				0), mouseButton4Down(0), mouseButton5Down(0), mouseWheelForward(
+				0), mouseWheelBack(0), mouseXPosition(0), mouseYPosition(0)
 {
 }
 
@@ -42,6 +42,56 @@ CEngine::~CEngine()
 
 	TTF_Quit();
 	SDL_Quit();
+}
+
+bool CEngine::Run(CGame* game, int screenWidth, int screenHeight,
+		const char* windowTitle)
+{
+	int fpsCount = 0;
+	unsigned int nextFpsClear = 0;
+
+	unsigned int nextTick = 0;
+
+	CreateWindow(screenWidth, screenHeight, windowTitle);
+	StopMusic();
+
+	SDL_Color colour_fps =
+	{ 255, 255, 255 };
+
+	DebugOverlayLoadFont("data/font0.ttf", colour_fps);
+
+	game->Init();
+
+	while (Update())
+	{
+		FlipScreen();
+		ClearScreen();
+		fpsCount++;
+
+		game->Render();
+
+		DebugOverLayRender();
+
+		if (SDL_GetTicks() > nextTick)
+		{
+			nextTick += m_tickRate;
+
+			game->Update();
+
+			if (SDL_GetTicks() > nextFpsClear)
+			{
+				m_fpsCount = fpsCount;
+				nextFpsClear += 1000;
+				fpsCount = 0;
+			}
+
+			m_lastKeyPressed = SDLK_UNKNOWN;
+		}
+
+		Sleep(1);
+	}
+
+	return true;
 }
 
 bool CEngine::CreateWindow(int width, int height, std::string title)
@@ -223,7 +273,13 @@ void CEngine::FlipScreen()
 }
 void CEngine::ClearScreen()
 {
-	SDL_FillRect(m_screen, 0, 0);
+	SDL_FillRect(m_screen, 0, m_clearScreenColour);
+}
+
+void CEngine::SetClearScreenColour(unsigned char r, unsigned char g,
+		unsigned char b)
+{
+	m_clearScreenColour = (r << 24) + (g << 16) + (b << 8);
 }
 
 int CEngine::LoadTexture(std::string filename)
@@ -535,11 +591,7 @@ bool CEngine::GetKeyDown(SDLKey key)
 
 SDLKey CEngine::GetLastKeyPressed()
 {
-	SDLKey r = m_lastKeyPressed;
-
-	m_lastKeyPressed = SDLK_UNKNOWN;
-
-	return r;
+	return m_lastKeyPressed;
 }
 
 int CEngine::LoadMusic(std::string filename)
@@ -648,6 +700,12 @@ void CEngine::PurgeMusic()
 		*music_it = 0;
 	}
 	m_music.clear();
+}
+
+void CEngine::SetMusicVolume(int percent)
+{
+	percent += percent >> 2;
+	Mix_VolumeMusic(percent);
 }
 
 int CEngine::LoadSound(std::string filename)
@@ -806,7 +864,7 @@ bool CEngine::DebugOverlayLoadFont(std::string filename, SDL_Color colour)
 {
 	bool r = true;
 
-	m_debugFont = LoadFont(filename, 18);
+	m_debugFont = LoadFont(filename, m_debugFontSize);
 	m_debugColour = colour;
 
 	return r;
@@ -819,25 +877,48 @@ void CEngine::DebugOverlayAdd(std::string s)
 {
 	m_debugMessages.push_back(s);
 
-	if (m_debugMessages.size() > 25)
+	if (m_debugMessages.size() > m_debugOverlayMaxLines)
 	{
 		m_debugMessages.pop_front();
 	}
 }
 void CEngine::DebugOverLayRender()
 {
-	int y = m_screen->h - 15;
+	if (!m_debugShown)
+	{
+		return;
+	}
 
-	deque<string>::iterator debug_it = m_debugMessages.begin();
-	for (debug_it = m_debugMessages.begin(); debug_it != m_debugMessages.end();
-			++debug_it)
+	int y = m_screen->h - m_debugFontSize;
+
+	deque<string>::reverse_iterator debug_it = m_debugMessages.rbegin();
+	for (debug_it = m_debugMessages.rbegin();
+			debug_it != m_debugMessages.rend(); ++debug_it)
 	{
 		RenderFont(m_debugFont, (*debug_it), 5, y, m_debugColour);
-		y -= 18;
+		y -= m_debugFontSize;
 	}
 }
 
 int CEngine::DebugOverLayFont()
 {
 	return m_debugFont;
+}
+void CEngine::DebugOverlayShow(bool show)
+{
+	m_debugShown = show;
+}
+bool CEngine::DebugOverlayShown()
+{
+	return m_debugShown;
+}
+
+int CEngine::GetFPSCount()
+{
+	return m_fpsCount;
+}
+
+void CEngine::SetTickRate(int tickRate)
+{
+	m_tickRate = tickRate;
 }

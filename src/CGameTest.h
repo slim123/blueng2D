@@ -1,13 +1,10 @@
-#ifndef CGAME_H_
-#define CGAME_H_
+#ifndef CGAMETEST_H_
+#define CGAMETEST_H_
 
-#include <vector>
-#include <queue>
+#include "CEngine.h"
 
-class CGame
+class CGameTest : public CGame
 {
-	static CGame game;
-
 	int texSquareSheet;
 	int texSquare[4];
 	int posXSquare;
@@ -22,18 +19,15 @@ class CGame
 	int font1;
 
 	int musMP3;
+	int musVolume;
 
 public:
-	static CGame& Get();
-
-	CGame();
-	virtual ~CGame();
+	CGameTest();
+	virtual ~CGameTest();
 
 	void Init();
 	void Render();
 	void Update();
 };
 
-#define GAME CGame::Get()
-
-#endif /* CGAME_H_ */
+#endif /* CGAMETEST_H_ */

@@ -11,6 +11,7 @@
 #include <vector>
 #include <deque>
 #include <string>
+#include <sstream>
 #include <stdint.h>
 
 #ifdef __linux__
@@ -23,6 +24,13 @@
 #include "SDL_mixer.h"
 #endif
 
+#define DEBUGLOG(x) \
+	{\
+	std::stringstream debugStream;\
+	debugStream << x;\
+	ENG.DebugOverlayAdd(ENG.debugStream.str());\
+	}
+
 const SDL_Color col_red =
 { 255, 0, 0, 255 };
 const SDL_Color col_green =
@@ -31,6 +39,24 @@ const SDL_Color col_blue =
 { 0, 0, 255, 255 };
 const SDL_Color col_white =
 { 255, 255, 255, 255 };
+const SDL_Color col_black =
+{ 0, 0, 0, 255 };
+
+class CGame
+{
+public:
+	CGame()
+	{
+	}
+
+	virtual ~CGame()
+	{
+	}
+
+	virtual void Init()=0;
+	virtual void Render()=0;
+	virtual void Update()=0;
+};
 
 class CSubTexture
 {
@@ -51,28 +77,38 @@ class CEngine
 	std::vector<Mix_Music*> m_music;
 	std::vector<Mix_Chunk*> m_sounds;
 
+	static const int m_debugFontSize = 12;
+	static const int m_debugOverlayMaxLines = 25;
 	int m_debugFont;
 	std::deque<std::string> m_debugMessages;SDL_Colour m_debugColour;
+	bool m_debugShown;
 
 	unsigned int m_textureLastBound;
+
+	int m_fpsCount;
+	int m_tickRate;
+	unsigned int m_clearScreenColour;
 
 	CEngine();
 	virtual ~CEngine();
 	bool CreateFontTexture(int width, int height);
 	static CEngine engine;
+
+	bool Update();
+	bool CreateWindow(int width, int height, std::string title);
+	void FlipScreen();
+	void ClearScreen();
+
 public:
 	static CEngine& Get();
+	bool Run(CGame* game, int screenWidth, int screenHeight,
+			const char* windowTitle);
 
-	bool CreateWindow(int width, int height, std::string title);
 	int GetScreenWidth();
 	int GetScreenHeight();
 
-	bool Update();
 	unsigned int GetTicks();
 	void Sleep(unsigned int ms);
-
-	void FlipScreen();
-	void ClearScreen();
 
 	int LoadTexture(std::string filename);
 	bool RenderTexture(int textureNumber, int x, int y);
@@ -89,7 +125,7 @@ public:
 
 	int LoadFont(std::string filename, int size);
 	bool RenderFont(int fontNumber, std::string text, int x, int y,
-			SDL_Colour colour);
+	SDL_Colour colour);
 	void PurgeFonts();
 
 	int LoadMusic(std::string filename);
@@ -98,6 +134,7 @@ public:
 	bool ResumeMusic();
 	bool StopMusic();
 	void PurgeMusic();
+	void SetMusicVolume(int percent);
 
 	int LoadSound(std::string filename);
 	bool PlaySound(int soundNumber);
@@ -108,6 +145,13 @@ public:
 	void DebugOverlayAdd(std::string s);
 	void DebugOverLayRender();
 	int DebugOverLayFont();
+	void DebugOverlayShow(bool show);
+	bool DebugOverlayShown();
+
+	int GetFPSCount();
+	void SetTickRate(int tickRate);
+	void SetClearScreenColour(unsigned char r, unsigned char g,
+			unsigned char b);
 
 	bool mouseButton1Down;
 	bool mouseButton2Down;
@@ -123,12 +167,14 @@ public:
 	SDLKey GetLastKeyPressed();
 
 	bool CollideCircleCircle(int x1, int y1, int r1, int x2, int y2, int r2);
-	bool CollideRectRect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2);
+	bool CollideRectRect(int x1, int y1, int w1, int h1, int x2, int y2, int w2,
+			int h2);
 
 	bool CollidePointRect(int x1, int y1, int x2, int y2, int w2, int h2);
 	bool CollidePointCircle(int x1, int y1, int x2, int y2, int r2);
 
-	bool CollideCircleRect(int x1, int y1, int r1, int x2, int y2, int w2, int h2);
+	bool CollideCircleRect(int x1, int y1, int r1, int x2, int y2, int w2,
+			int h2);
 };
 
 #define ENG CEngine::Get()

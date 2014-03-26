@@ -1,17 +1,7 @@
-#include "CGame.h"
-#include "CEngine.h"
-
-#include <sstream>
+#include "CGameTest.h"
 #include <string.h>
 
-CGame CGame::game;
-
-CGame& CGame::Get()
-{
-	return game;
-}
-
-CGame::CGame()
+CGameTest::CGameTest()
 {
 	texSquareSheet = -1;
 	texCircleSheet = -1;
@@ -31,14 +21,14 @@ CGame::CGame()
 	font1 = -1;
 
 	musMP3 = -1;
+	musVolume = 25;
 }
 
-CGame::~CGame()
+CGameTest::~CGameTest()
 {
-
 }
 
-void CGame::Init()
+void CGameTest::Init()
 {
 	font0 = ENG.LoadFont("data/font0.ttf", 12);
 	font1= ENG.LoadFont("data/font1.ttf", 16);
@@ -60,9 +50,12 @@ void CGame::Init()
 
 	musMP3 = ENG.LoadMusic("data/BarrenLandscape.mp3");
 	ENG.PlayMusic(musMP3);
+	ENG.SetMusicVolume(musVolume);
+
+	ENG.SetClearScreenColour(100, 100, 0);
 }
 
-void CGame::Render()
+void CGameTest::Render()
 {
 	int frame = (ENG.GetTicks()/100) % 4;
 
@@ -96,7 +89,7 @@ void CGame::Render()
 
 }
 
-void CGame::Update()
+void CGameTest::Update()
 {
 	if (ENG.GetKeyDown(SDLK_UP) && posYCircle > -25)
 	{
@@ -116,16 +109,45 @@ void CGame::Update()
 		posXCircle++;
 	}
 
-	SDLKey lastPressed = ENG.GetLastKeyPressed();
-	if(lastPressed == SDLK_p)
+	if(ENG.GetLastKeyPressed() == SDLK_p)
 	{
 		ENG.PauseMusic();
 		ENG.DebugOverlayAdd("Paused music");
 	}
-	if(lastPressed == SDLK_r)
+	else if(ENG.GetLastKeyPressed() == SDLK_r)
 	{
 		ENG.ResumeMusic();
 		ENG.DebugOverlayAdd("Resumed music");
+	}
+	else if(ENG.GetLastKeyPressed() == SDLK_d)
+	{
+		if(!ENG.DebugOverlayShown())
+		{
+			ENG.DebugOverlayShow(true);
+			ENG.DebugOverlayAdd("Debug overlay on");
+		}
+		else
+		{
+			ENG.DebugOverlayShow(false);
+			ENG.DebugOverlayAdd("Debug overlay off");
+		}
+	}
+	else if(ENG.GetLastKeyPressed() == SDLK_t)
+	{
+		DEBUGLOG("test DEBUGLOG @" << ENG.GetTicks());
+	}
+
+	if(ENG.GetKeyDown(SDLK_l) && musVolume < 100)
+	{
+		musVolume++;
+		ENG.SetMusicVolume(musVolume);
+		ENG.DebugOverlayAdd("musVolume = " + musVolume);
+	}
+	else if(ENG.GetKeyDown(SDLK_k) && musVolume != 0)
+	{
+		musVolume--;
+		ENG.SetMusicVolume(musVolume);
+		ENG.DebugOverlayAdd("musVolume = " + musVolume);
 	}
 }
 
