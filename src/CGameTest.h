@@ -21,6 +21,9 @@ class CGameTest : public CGame
 	int musMP3;
 	int musVolume;
 
+	int sndAlien;
+	int sndRooster;
+
 public:
 	CGameTest();
 	virtual ~CGameTest();

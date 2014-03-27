@@ -22,6 +22,9 @@ CGameTest::CGameTest()
 
 	musMP3 = -1;
 	musVolume = 25;
+
+	sndAlien = -1;
+	sndRooster = -1;
 }
 
 CGameTest::~CGameTest()
@@ -52,7 +55,10 @@ void CGameTest::Init()
 	ENG.PlayMusic(musMP3);
 	ENG.SetMusicVolume(musVolume);
 
-	ENG.SetClearScreenColour(100, 100, 0);
+	ENG.SetClearScreenColour(50, 50, 0);
+
+	sndAlien = ENG.LoadSound("data/alien_scanner.wav");
+	sndRooster = ENG.LoadSound("data/medium_rooster_crowing.wav");
 }
 
 void CGameTest::Render()
@@ -135,6 +141,16 @@ void CGameTest::Update()
 	else if(ENG.GetLastKeyPressed() == SDLK_t)
 	{
 		DEBUGLOG("test DEBUGLOG @" << ENG.GetTicks());
+	}
+	else if(ENG.GetLastKeyPressed() == SDLK_1)
+	{
+		ENG.PlaySound(sndAlien);
+		DEBUGLOG("Playing alien sound " << sndAlien);
+	}
+	else if(ENG.GetLastKeyPressed() == SDLK_2)
+	{
+		ENG.PlaySound(sndRooster);
+		DEBUGLOG("Playing rooster sound " << sndRooster);
 	}
 
 	if(ENG.GetKeyDown(SDLK_l) && musVolume < 100)
