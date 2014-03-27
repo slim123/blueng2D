@@ -28,7 +28,7 @@
 	{\
 	std::stringstream debugStream;\
 	debugStream << x;\
-	ENG.DebugOverlayAdd(ENG.debugStream.str());\
+	ENG.DebugOverlayAdd(debugStream.str());\
 	}
 
 const SDL_Color col_red =
